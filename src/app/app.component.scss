@@ -1,0 +1,32 @@
+// Hides the vertical grid lines
+::ng-deep .gridline-path-vertical {
+  display: none !important;
+}
+
+// Thicken the chart lines
+::ng-deep path {
+  stroke-width: 2.5px !important;
+}
+
+// Increase data point circle size
+::ng-deep .circle {
+  stroke: #0276b1 !important;
+  stroke-width: 4 !important;
+  opacity: 0;
+
+  // Only show the circle on hover
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// Lighten the vertical bar that appears on hover
+::ng-deep rect.tooltip-anchor {
+  fill: #d4d4d4 !important;
+  stroke-width: 0 !important;
+}
+
+// Highlight x axis label on hover
+::ng-deep .tick > text {
+  font-size: 16px !important;
+}
