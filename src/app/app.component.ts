@@ -1,38 +1,53 @@
-import { Component, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
-import { Color, LineChartComponent } from '@swimlane/ngx-charts';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { animate, style, transition, trigger } from '@angular/animations';
+import { ChangeDetectionStrategy, Component, ContentChild, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   template: `
     <div style="width: 800px; margin: 4rem auto;">
-      <ngx-charts-line-chart #lineChart
+      <ngx-charts-line-chart
+        [@chartAnimation]
+        [animations]="false"
         [results]="lineChartData"
         [scheme]="colorScheme"
         [view]="[800, 400]"
-        [tooltipDisabled]="false"
         [xAxis]="true"
         [yAxis]="true"
         [xAxisTicks]="[1, 13, 30]"
+        [xAxisTickFormatting]="xAxisTickFormatting"
         [yAxisTickFormatting]="yAxisTickFormatting"
         (activate)="onActivate($event)"
         (deactivate)="onDeactivate($event)"
         (select)="onDataPointClick($event)"
         (mouseMove)="onMouseMove($event)">
-        <ng-template #xAxisTickTemplate let-value="value" let-index="index">
-          <span>Label</span>
+        <ng-template #tooltipTemplate let-model="model">
+          <div class="custom-tooltip">
+            <pre>{{ model | json }}</pre>
+          </div>
+        </ng-template>
+        <ng-template #seriesTooltipTemplate let-model="model">
+          <div class="custom-series-tooltip">
+            <pre>{{ model | json }}</pre>
+          </div>  
         </ng-template>
       </ngx-charts-line-chart>
     </div>
   `,
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    trigger('chartAnimation', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('500ms ease', style({ opacity: 1 }))
+      ])
+    ])
+  ]
 })
 export class AppComponent {
-  // The ! modifier asserts that the lineChart will be initialized before it is used
-  @ViewChild('lineChart') lineChart!: LineChartComponent;
-  @ViewChild('xAxisTickTemplate', { read: TemplateRef }) xAxisTicks!: TemplateRef<any>;
 
-  constructor(private sanitizer: DomSanitizer, private viewContainerRef: ViewContainerRef) {}
+  @ViewChild('tooltipTemplate', { static: false}) tooltipTemplate!: TemplateRef<any>;
+  @ViewChild('seriesTooltipTemplate', { static: false}) seriesTooltipTemplate!: TemplateRef<any>;
 
   lineChartData = [
     {
@@ -130,7 +145,7 @@ export class AppComponent {
         "name": "25"
       },
       {
-        "value": -1,
+        "value": -111,
         "name": "26"
       },
       {
@@ -152,23 +167,28 @@ export class AppComponent {
     }
   ];
 
-  colorScheme = { domain: ['#0276b1'] } as Color;
+  colorScheme = { domain: ['#0276b1'] };
 
-  yAxisTickFormatting(value: any) {
-    return value + '?';
+  yAxisTickFormatting(value: number) {
+    if (value < 1000) {
+      return value.toString();
+    }
+
+    const suffixes = ['K', 'M', 'B'];
+    const scale = Math.floor(Math.log(value) / Math.log(1000));
+    const wholeNumber = value / Math.pow(1000, scale);
+    const decimalPlaces = Math.min(scale, 2);
+    const suffix = suffixes[scale - 1];
+
+    return wholeNumber.toFixed(decimalPlaces) + suffix;
   }
 
   xAxisTickFormatting(value: any)  {
-    // const styles = 'font-weight: bold; font-size: 16px;';
-    // const formattedValue = `<span style="${styles}">Apr. ${value}</span>`;
-    // return this.sanitizer.bypassSecurityTrustHtml(formattedValue);
-
-    // return `<span style="font-weight: bold; font-size: 16px;">Apr. ${value}</span>`;
-    return 'Apr. ' + value; 
+    return `Jun ${value}`;
   }
 
   onActivate(event: any) {
-    // console.log(event);
+    // console.log('Hovered over', event.value);
   }
 
   onDeactivate(event: any) {
@@ -180,9 +200,6 @@ export class AppComponent {
   }
 
   onDataPointClick(data: any) {
-    // console.log(data);
-    const viewRef = this.viewContainerRef.createEmbeddedView(this.xAxisTicks);
-    const innerHtml = viewRef.rootNodes[0].innerHTML;
-    console.log(innerHtml); // Outputs: "Hello World"
+    console.log(data);
   }
 }
