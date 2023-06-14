@@ -1,36 +1,38 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { ChangeDetectionStrategy, Component, ContentChild, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   template: `
-    <div style="width: 800px; margin: 4rem auto;">
-      <ngx-charts-line-chart
-        [@chartAnimation]
-        [animations]="false"
-        [results]="lineChartData"
-        [scheme]="colorScheme"
-        [view]="[800, 400]"
-        [xAxis]="true"
-        [yAxis]="true"
-        [xAxisTicks]="[1, 13, 30]"
-        [xAxisTickFormatting]="xAxisTickFormatting"
-        [yAxisTickFormatting]="yAxisTickFormatting"
-        (activate)="onActivate($event)"
-        (deactivate)="onDeactivate($event)"
-        (select)="onDataPointClick($event)"
-        (mouseMove)="onMouseMove($event)">
-        <ng-template #tooltipTemplate let-model="model">
-          <div class="custom-tooltip">
-            <pre>{{ model | json }}</pre>
-          </div>
-        </ng-template>
-        <ng-template #seriesTooltipTemplate let-model="model">
-          <div class="custom-series-tooltip">
-            <pre>{{ model | json }}</pre>
-          </div>  
-        </ng-template>
-      </ngx-charts-line-chart>
+    <div class="card">
+      <div #container class="chart-container">
+        <ngx-charts-line-chart
+          [@chartAnimation]
+          [animations]="false"
+          [results]="lineChartData"
+          [scheme]="{ domain: ['#0276b1'] }"
+          [view]="[chartWidth, chartHeight]"
+          [xAxis]="true"
+          [xAxisTicks]="[1, 13, 30]"
+          [xAxisTickFormatting]="xAxisTickFormatting"
+          [yAxis]="true"
+          [yAxisTickFormatting]="yAxisTickFormatting"
+          [yScaleMax]="yScaleMax"
+          (activate)="dataPointHover($event)"
+          (select)="dataPointClick($event)">
+          <ng-template #tooltipTemplate let-model="model">
+            <div class="custom-tooltip">
+              <pre>More details...</pre>
+            </div>
+          </ng-template>
+          <ng-template #seriesTooltipTemplate let-model="model[0]">
+            <div class="custom-series-tooltip">
+              <pre>June 04, 2022</pre>
+              <pre>{{ model.value }} impressions</pre>
+            </div>  
+          </ng-template>
+        </ngx-charts-line-chart>
+      </div>
     </div>
   `,
   styleUrls: ['./app.component.scss'],
@@ -44,11 +46,14 @@ import { ChangeDetectionStrategy, Component, ContentChild, TemplateRef, ViewChil
     ])
   ]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
-  @ViewChild('tooltipTemplate', { static: false}) tooltipTemplate!: TemplateRef<any>;
-  @ViewChild('seriesTooltipTemplate', { static: false}) seriesTooltipTemplate!: TemplateRef<any>;
+  // Values which must be computed prior to render
+  chartWidth!: number;
+  chartHeight!: number;
+  yScaleMax!: number;
 
+  // Todo - pass this in as input
   lineChartData = [
     {
       name: 'Series 1',
@@ -167,7 +172,44 @@ export class AppComponent {
     }
   ];
 
-  colorScheme = { domain: ['#0276b1'] };
+  constructor(private readonly changeDetector: ChangeDetectorRef) {}
+
+  ngOnInit() {
+    // Prevent data points from exceeding the top grid line
+    this.yScaleMax = this.calculateYScaleMax();
+
+    // Constrain the graph to it's viewport
+    this.updateView();
+  }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    this.updateView();
+  }
+
+  updateView() {
+    const maxWidth = 1168;
+    const margin = 24; 
+
+    this.chartWidth = Math.min(window.innerWidth, maxWidth) - margin * 2;
+    this.chartHeight = window.innerWidth >= 768 ? 400 : 300;
+  }
+
+  detectChanges(): void {
+    this.changeDetector.detectChanges();
+  }
+
+  calculateYScaleMax(): number {
+    const buffer = 1.2;
+
+    const maxValue = Math.max(
+      ...this.lineChartData.flatMap((series) =>
+        series.series.map((dataPoint) => dataPoint.value)
+      )
+    );
+
+    return maxValue * buffer;
+  }
 
   yAxisTickFormatting(value: number) {
     if (value < 1000) {
@@ -183,23 +225,11 @@ export class AppComponent {
     return wholeNumber.toFixed(decimalPlaces) + suffix;
   }
 
-  xAxisTickFormatting(value: any)  {
+  xAxisTickFormatting(value: number)  {
     return `Jun ${value}`;
   }
 
-  onActivate(event: any) {
-    // console.log('Hovered over', event.value);
-  }
+  dataPointHover(_: any) {}
 
-  onDeactivate(event: any) {
-    // console.log(event);
-  }
-
-  onMouseMove(event: any) {
-
-  }
-
-  onDataPointClick(data: any) {
-    console.log(data);
-  }
+  dataPointClick(_: any) {}
 }

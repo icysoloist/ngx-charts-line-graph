@@ -1,32 +1,60 @@
+$circle-radius: 2.5px;
+$line-width: 2.5px;
+
+$grid-color: #d4d4d4;
+$line-color: #0276b1;
+
+$tooltip-animation-duration: 0.3s;
+
+.chart-container {
+  display: flex;
+}
+
 // Hides the vertical grid lines
 ::ng-deep .gridline-path-vertical {
   display: none !important;
 }
 
-// Thicken the chart lines
+// Thicken the chart lines (data line, not the grid line)
 ::ng-deep path {
-  stroke-width: 2.5px !important;
+  stroke-width: $line-width !important;
 }
 
 // Increase data point circle size
 ::ng-deep .circle {
-  stroke: #0276b1 !important;
-  stroke-width: 4 !important;
-  opacity: 0;
+  stroke: $line-color !important;
+  stroke-width: calc($circle-radius * 2) !important;
 
   // Only show the circle on hover
+  opacity: 0 !important;
   &:hover {
-    opacity: 1;
+    opacity: 1 !important;
   }
 }
 
 // Lighten the vertical bar that appears on hover
 ::ng-deep rect.tooltip-anchor {
-  fill: #d4d4d4 !important;
-  stroke-width: 0 !important;
+  fill: $grid-color !important;
 }
 
-// Apply styles to axis labels
-::ng-deep .tick > text {
-  font-size: 12px !important;
+// Control the tooltip animation timing function
+::ng-deep .ngx-charts-tooltip-content.animate {
+  transition: all $tooltip-animation-duration !important;
+}
+
+// Position the tooltip centered on the anchor and top of the chart
+::ng-deep ngx-tooltip-content.position-right {
+  $x-amount: calc(-50% - 1rem);
+  $y-amount: calc(100% - 150px - 1rem);
+  transform: translate($x-amount, $y-amount) !important;
+
+  @media(min-width: 768px) {
+    $y-amount: calc(100% - 200px - 1rem);
+    transform: translate($x-amount, $y-amount) !important;
+  }
+
+  // Hide the triangular tooltip caret
+  .tooltip-caret {
+    display: none !important;
+  }
 }
