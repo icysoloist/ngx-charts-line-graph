@@ -1,5 +1,6 @@
 * {
   font-family: Optimist, Helvetica Neue, Helvetica, Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
 }
 
 html {
@@ -8,13 +9,4 @@ html {
 
 body {
   margin: 0;
-}
-
-.card {
-  border: 1px solid #d4d4d4;
-  border-radius: 8px;
-  background: #fff;
-  width: max-content;
-  margin: 4rem auto;
-  padding: 1rem;
 }
