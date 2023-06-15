@@ -22,14 +22,13 @@ import {
         [scheme]="{ domain: ['#0276b1'] }"
         [view]="[chartWidth, chartHeight]"
         [xAxis]="true"
-        [xAxisTicks]="[1, 13, 30]"
+        [xAxisTicks]="xAxisTicks"
         [xAxisTickFormatting]="xAxisTickFormatting"
         [yAxis]="true"
         [yAxisTickFormatting]="yAxisTickFormatting"
         [yScaleMax]="yScaleMax"
         (activate)="dataPointHover($event)"
-        (select)="dataPointClick($event)"
-        (mouseMove)="onMouseMove($event)">
+        (select)="dataPointClick($event)">
         <ng-template #tooltipTemplate let-model="model">
           <div class="custom-tooltip">
             <pre>More details...</pre>
@@ -37,8 +36,7 @@ import {
         </ng-template>
         <ng-template #seriesTooltipTemplate let-model="model[0]">
           <div class="custom-series-tooltip">
-            <pre>June 04, 2022</pre>
-            <pre>{{ model.value }} impressions</pre>
+           <app-tooltip [model]="model" (tooltipRendered)="log($event)"></app-tooltip>
           </div>  
         </ng-template>
       </ngx-charts-line-chart>
@@ -56,24 +54,38 @@ export class ChartComponent implements OnInit, OnChanges, AfterViewInit {
   yScaleMax!: number;
   showChart = false;
 
+  xAxisTicks: number[] = [1, 13, 30];
+
   constructor(private elementRef: ElementRef) { }
 
   ngOnInit() {
     this.updateView();
   }
 
+  log(model: any) {
+    if (model.name) {
+
+      if (this.xAxisTicks.some(value => value === +model.name)) {
+        const query = `.x.axis .tick:nth-of-type(${this.xAxisTicks.indexOf(+model.name) + 1})`;
+        
+        const tickElement = this.elementRef.nativeElement.querySelector(query);
+        
+        if (tickElement) {
+          const rectElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  
+          rectElement.setAttribute('width', '60');
+          rectElement.setAttribute('height', '32');
+          rectElement.setAttribute('fill', 'lightgray');
+          rectElement.setAttribute('transform', 'translate(-26, 0)');
+    
+          tickElement.parentNode.insertBefore(rectElement, tickElement);
+        }
+      }
+    }
+  }
+
   ngAfterViewInit(): void {
     this.showChart = true;
-
-    // const tickElement = this.elementRef.nativeElement.querySelector('.x.axis .tick:nth-child(1)');
-    // const rectElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-
-    // rectElement.setAttribute('width', '60');
-    // rectElement.setAttribute('height', '32');
-    // rectElement.setAttribute('fill', 'lightgray');
-    // rectElement.setAttribute('transform', 'translate(-26, 0)');
-
-    // tickElement.parentNode.insertBefore(rectElement, tickElement);
   }
 
   ngOnChanges(): void {
@@ -116,11 +128,7 @@ export class ChartComponent implements OnInit, OnChanges, AfterViewInit {
     return `Jun ${value}`;
   }
 
-  dataPointHover(_: any) { }
+  dataPointHover(_: any) {}
 
-  dataPointClick(_: any) { }
-
-  onMouseMove(event: any) {
-    console.log('hi')
-  }
+  dataPointClick(_: any) {}
 }

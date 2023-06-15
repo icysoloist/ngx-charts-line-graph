@@ -5,12 +5,14 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { AppComponent } from './app.component';
 import { ChartComponent } from './chart/chart.component';
 import { LayoutComponent } from './layout/layout.component';
+import { TooltipComponent } from './chart/tooltip/tooltip.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LayoutComponent,
-    ChartComponent
+    ChartComponent,
+    TooltipComponent
   ],
   imports: [
     BrowserModule,
