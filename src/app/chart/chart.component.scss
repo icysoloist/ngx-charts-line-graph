@@ -39,7 +39,7 @@ $tooltip-animation-duration: 0.3s;
 }
 
 // Lighten the vertical bar that appears on hover
-::ng-deep rect.tooltip-anchor {
+::ng-deep .tooltip-anchor {
   fill: $grid-color !important;
 }
 
@@ -59,6 +59,13 @@ $tooltip-animation-duration: 0.3s;
     transform: translate($x-amount, $y-amount) !important;
   }
 
+  // Hide the triangular tooltip caret
+  .tooltip-caret {
+    display: none !important;
+  }
+}
+
+::ng-deep ngx-tooltip-content.position-left {
   // Hide the triangular tooltip caret
   .tooltip-caret {
     display: none !important;

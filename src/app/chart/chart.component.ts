@@ -7,7 +7,6 @@ import {
   Input,
   OnChanges,
   OnInit,
-  SimpleChanges,
   ViewChild
 } from '@angular/core';
 
@@ -29,7 +28,8 @@ import {
         [yAxisTickFormatting]="yAxisTickFormatting"
         [yScaleMax]="yScaleMax"
         (activate)="dataPointHover($event)"
-        (select)="dataPointClick($event)">
+        (select)="dataPointClick($event)"
+        (mouseMove)="onMouseMove($event)">
         <ng-template #tooltipTemplate let-model="model">
           <div class="custom-tooltip">
             <pre>More details...</pre>
@@ -51,29 +51,36 @@ export class ChartComponent implements OnInit, OnChanges, AfterViewInit {
 
   @Input() lineChartData: any[] = [];
 
-  // Values which must be computed prior to render
   chartWidth!: number;
   chartHeight!: number;
   yScaleMax!: number;
   showChart = false;
 
+  constructor(private elementRef: ElementRef) { }
+
   ngOnInit() {
     this.updateView();
   }
-  
+
   ngAfterViewInit(): void {
-    this.showChart = true
+    this.showChart = true;
+
+    // const tickElement = this.elementRef.nativeElement.querySelector('.x.axis .tick:nth-child(1)');
+    // const rectElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+
+    // rectElement.setAttribute('width', '60');
+    // rectElement.setAttribute('height', '32');
+    // rectElement.setAttribute('fill', 'lightgray');
+    // rectElement.setAttribute('transform', 'translate(-26, 0)');
+
+    // tickElement.parentNode.insertBefore(rectElement, tickElement);
   }
-  
+
   ngOnChanges(): void {
     this.yScaleMax = this.calculateYScaleMax();
   }
 
   @HostListener('window:resize')
-  onWindowResize() {
-    this.updateView();
-  }
-
   updateView() {
     this.chartWidth = this.chartContainer.nativeElement.offsetWidth;
     this.chartHeight = window.innerWidth >= 976 ? 400 : 300;
@@ -105,11 +112,15 @@ export class ChartComponent implements OnInit, OnChanges, AfterViewInit {
     return wholeNumber.toFixed(decimalPlaces) + suffix;
   }
 
-  xAxisTickFormatting(value: number)  {
+  xAxisTickFormatting(value: number) {
     return `Jun ${value}`;
   }
 
-  dataPointHover(_: any) {}
+  dataPointHover(_: any) { }
 
-  dataPointClick(_: any) {}
+  dataPointClick(_: any) { }
+
+  onMouseMove(event: any) {
+    console.log('hi')
+  }
 }
